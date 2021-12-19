@@ -44,6 +44,7 @@ function love.load()
 
     love.graphics.setDefaultFilter('nearest','nearest')
 
+    love.window.setTitle('Pong')
     math.randomseed(os.time())
 
     smallFont = love.graphics.newFont('font.ttf',8)
