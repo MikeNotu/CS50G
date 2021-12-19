@@ -31,7 +31,7 @@ function Ball:reset()
     self.x = VIRTUAL_WIDTH / 2 - 2
     self.y = VIRTUAL_HEIGHT / 2 - 2
     self.dy = math.random(2) == 1 and - 100 or 100
-    self.dx = math.random(-1250,1250)
+    self.dx = math.random(-300,300)
 end
 
 function Ball:update(dt)
