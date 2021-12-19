@@ -49,6 +49,7 @@ function love.load()
 
     smallFont = love.graphics.newFont('font.ttf',8)
 
+    scoreFont = love.graphics.newFont('font.ttf',32)
 
     love.graphics.setFont(smallFont)
 
@@ -57,6 +58,12 @@ function love.load()
         resizable = false,
         vsync = true
     })
+
+    player1Score = 0
+    player2Score = 0
+
+    servingPlayer = 1
+
 
     player1 = Paddle(10,30,5,20)
     player2 = Paddle(VIRTUAL_WIDTH - 10, VIRTUAL_HEIGHT - 30,5,20)
@@ -68,7 +75,15 @@ end
 
 function love.update(dt)
 
-    if gameState == 'play' then
+    if gameState == 'state' then
+        ball.dy = math.random(-50,50)
+        if servingPlayer == 1 then
+            ball.dx = math.random(140,200)
+        else 
+            ball.dx = -math.random(140,200)
+        end
+        
+    elseif gameState == 'play' then
 
         if ball:collides(player1) then
             ball.dx = -ball.dx * 1.03
@@ -81,16 +96,16 @@ function love.update(dt)
             end
         end
 
-        -- if ball:collides(player2) then
-        --     ball.dx = -ball.dx * 1.03
-        --     ball.x = player2.x -4
+        if ball:collides(player2) then
+            ball.dx = -ball.dx * 1.03
+            ball.x = player2.x -4
 
-        --     if ball.dy < 0 then 
-        --         ball.dy = -math.random(10,150)
-        --     else
-        --         ball.dy = math.random(10,150)
-        --     end
-        -- end
+            if ball.dy < 0 then 
+                ball.dy = -math.random(10,150)
+            else
+                ball.dy = math.random(10,150)
+            end
+        end
 
         if ball.y <= 0 then
             ball.y = 0
@@ -101,6 +116,20 @@ function love.update(dt)
             ball.y = VIRTUAL_HEIGHT - 4
             ball.dy = -ball.dy 
         end
+    end
+
+    if ball.x < 0 then
+        servingPlayer = 1
+        player2Score = player2Score +1
+        ball:reset()
+        gameState = 'serve'
+    end
+
+    if ball.x > VIRTUAL_WIDTH then
+        servingPlayer = 2
+        player1Score = player1Score +1
+        ball:reset()
+        gameState = 'serve'
     end
 
     if love.keyboard.isDown('w') then
@@ -137,11 +166,9 @@ function love.keypressed(key)
         love.event.quit()
     elseif key == 'enter' or key == 'return' then
         if gameState == 'start' then
+            gameState = 'serve'
+        elseif gameState == 'serve' then
             gameState = 'play'
-        else
-            gameState = 'start'
-
-            ball:reset()
         end 
     end     
 end
@@ -159,14 +186,18 @@ function love.draw()
 
     love.graphics.setFont(smallFont)
 
+    displayScore()
+
     if gameState == 'start' then
-        love.graphics.printf('Hello Start State!',0,20,VIRTUAL_WIDTH,'center')
-    else
-        love.graphics.printf('Hello Play State!',0,20,VIRTUAL_WIDTH,'center')
+        love.graphics.setFont(smallFont)
+        love.graphics.printf('Hello Start State!',0,10,VIRTUAL_WIDTH,'center')
+        love.graphics.printf('Press Enter to begin!',0,20,VIRTUAL_WIDTH,'center')
+    elseif gameState == 'serve' then
+        love.graphics.setFont(smallFont)
+        love.graphics.printf('Player ' .. tostring(servingPlayer) .. "'s serve!",0,10,VIRTUAL_WIDTH,'center')
+        love.graphics.printf('Press Enter to Serve!',0,20,VIRTUAL_WIDTH,'center')
+    elseif gameState == 'play' then
     end
-    -- love.graphics.setFont(scoreFont)
-    -- love.graphics.print(tostring(player1Score), VIRTUAL_WIDTH/2-50,VIRTUAL_HEIGHT/3)
-    -- love.graphics.print(tostring(player2Score), VIRTUAL_WIDTH/2+30,VIRTUAL_HEIGHT/3)
 
     player1:render()
     player2:render()
@@ -182,4 +213,14 @@ function displayFPS()
     love.graphics.setFont(smallFont)
     love.graphics.setColor(0,255,0,255)
     love.graphics.print('FPS: ' .. tostring(love.timer.getFPS()),10,10)
+end
+
+function displayScore()
+    -- draw score on the left and right center of the screen
+    -- need to switch font to draw before actually printing
+    love.graphics.setFont(scoreFont)
+    love.graphics.print(tostring(player1Score), VIRTUAL_WIDTH / 2 - 50, 
+        VIRTUAL_HEIGHT / 3)
+    love.graphics.print(tostring(player2Score), VIRTUAL_WIDTH / 2 + 30,
+        VIRTUAL_HEIGHT / 3)
 end
